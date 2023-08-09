@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- <link rel="stylesheet" href="style.css" /> -->
+    <title>Document</title>
+    <style>
+      /* style.css styles go here */
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: #f0f0f0;
+      }
+
+      div {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+      }
+
+      h1.status {
+        font-size: 24px;
+        color: #333;
+        margin-bottom: 20px;
+      }
+
+      button.find-state {
+        padding: 10px 20px;
+        background-color: #007bff;
+        color: #fff;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 18px;
+        transition: background-color 0.3s ease;
+      }
+
+      button.find-state:hover {
+        background-color: #0056b3;
+      }
+    </style>
+  </head>
+  <body>
+    <div>
+      <h1 class="status"></h1>
+      <button class="find-state">Find My State</button>
+    </div>
+    <!-- <script src="../controllers/locations.controller.js"></script> -->
+    <script>
+      const findMyState = (req, res) => {
+        // res.render("location");
+        const status = document.querySelector(".status");
+
+        const success = (position) => {
+          console.log(position);
+          const latitude = position.coords.latitude;
+          const longitude = position.coords.longitude;
+          console.log(latitude, longitude);
+
+          // const getApiUrl = `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=en`;
+          // fetch(getApiUrl)
+          //   .then((res) => res.json())
+          //   .then((data) => {
+          //     status.textContent = data.principalSubdivision;
+          //   });
+
+          // fetch('/save-location', {
+          //     method: 'POST',
+          //     headers: {
+          //       'Content-Type': 'application/json',
+          //     },
+          //     body: JSON.stringify({ latitude, longitude   }),
+          //   })
+          //     .then((res) => res.json())
+          //     .then((data) => {
+          //       status.textContent = 'Location saved successfully';
+          //     })
+          //     .catch((error) => {
+          //       status.textContent = 'Error saving location';
+          //       console.error('Error saving location:', error);
+          //     });
+
+          //Najot Ta`lim ning koordinata joylashuvi
+          const lat1 = 41.285718;
+          const lon1 = 69.203609;
+          const R = 6371;
+          const dLat = (latitude - lat1) * (Math.PI / 180);
+          const dLon = (longitude - lon1) * (Math.PI / 180);
+          const a =
+            Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+            Math.cos(lat1 * (Math.PI / 180)) *
+              Math.cos(latitude * (Math.PI / 180)) *
+              Math.sin(dLon / 2) *
+              Math.sin(dLon / 2);
+
+          const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+          const distance = R * c;
+          console.log(
+            `Distance between the points: ${distance.toFixed(2)} kilometers`
+          );
+
+          fetch("/save-location", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ latitude, longitude, distance }),
+          })
+            .then((res) => res.json())
+            .then((data) => {
+              status.textContent = "Location saved successfully";
+            })
+            .catch((error) => {
+              status.textContent = "Error saving location";
+              console.error("Error saving location:", error);
+            });
+        };
+
+        const error = () => {
+          status.textContent = "Something went wrong";
+        };
+
+        navigator.geolocation.getCurrentPosition(success, error);
+      };
+      document
+        .querySelector(".find-state")
+        .addEventListener("click", findMyState);
+    </script>
+  </body>
+</html>
